@@ -16,19 +16,16 @@ import os
 from torch.utils.data import Dataset
 
 
-file_name1 ='/root/IQA/traindata2.xlsx'
+#change it with your own file path
 file_name2 = '/root/IQA/testdata2.xlsx'
-data1 = pd.read_excel(file_name1,usecols=[0],header=None)
-data1 = np.array(data1)
-data1 = torch.Tensor(data1)
+
 data2 = pd.read_excel(file_name2,usecols=[0],header=None)
 data2 = np.array(data2)
 data2 = torch.Tensor(data2)
 
-train_transform=transforms.Compose([transforms.ToPILImage(),transforms.CenterCrop(224),transforms.ToTensor()])
 test_transform=transforms.Compose([transforms.ToPILImage(),transforms.ToTensor()])
 
-def load_sample(sample_dir):
+def load_sample(sample_dir):    #
     #图片名列表
     t=0
     lfilenames = []
@@ -42,7 +39,7 @@ def load_sample(sample_dir):
                 filename_path = os.sep.join([dirpath,filename])
             #添加文件名
                 lfilenames.append(filename_path)
-            #添加文件名对应的标签
+            #添加文件名对应的标签,即图片的MOS值
                 labelnames.append(data1[t])
                 t=t+1
     if 'test' in sample_dir:
@@ -52,27 +49,21 @@ def load_sample(sample_dir):
                 filename_path = os.sep.join([dirpath,filename])
             #添加文件名
                 lfilenames.append(filename_path)
-            #添加文件名对应的标签
+            #添加文件名对应的标签,即图片的MOS值
                 labelnames.append(data2[t])
                 t=t+1 
     lfilenames.sort(key=lambda x:int(x[-9:-4]))
-    lab = list(labelnames)  
-    labdict = dict(zip(lab,list(range(len(lab)))))# 
-    labels = [labdict[i] for i in labelnames]    # #
-    image_label_dict = dict(zip(lfilenames,labels))    # 
+    lab = list(labelnames)   
 
     return lfilenames,lab
 
 class MyDataSet(Dataset):
     def __init__(self,dataset_type,filenames, labelnames):
         if dataset_type=='train':
-        # dataset_path = r"D:\SPAQ zip\train"
            self.transform = train_transform
 
         if dataset_type=='test':
-           
            self.transform = test_transform
-        # self.sample_list = list()
         self.dataset_type = dataset_type
         self.sample_list = filenames
         self.label_list = labelnames
@@ -99,29 +90,24 @@ class MyDataSet(Dataset):
 
             return img1,img2,img3,img4,label       
         
-        #    return img,label
  
     def __len__(self):
         return len(self.sample_list)
 
-#train_directory_rand=r'D:\SPAQ zip\rand_train_4'
 test_directory_rand='/root/IQA/rand_test_4'
-#train_filenames_rand,train_labels_rand = load_sample(train_directory_rand)
 test_filenames_rand,test_labels_rand = load_sample(test_directory_rand)
-#data_train = MyDataSet(dataset_type='train',filenames=train_filenames_rand,labelnames=train_labels_rand)
-
 data_test = MyDataSet(dataset_type='test',filenames=test_filenames_rand,labelnames=test_labels_rand)
 
 net=resnet50(pretrained=False)
 channel_in = net.fc.in_features
 net.fc=nn.Linear(channel_in,1)
 net=net.cuda()
-model_path='image_model24.pth'
+model_path='image_model24.pth'  #change it with your own file
 state_dict = torch.load(model_path, map_location='cpu')
 net.load_state_dict(state_dict, strict=True)
 
 sum=0
-pre=np.zeros(2000)
+pre=np.zeros(2000)  #change '2000' with the amount of images in your testdataset
 lab=np.zeros(2000)
 net.eval()
 for i in range(2000):
@@ -146,23 +132,14 @@ for i in range(2000):
         out=(out1+out2+out3+out4)/4
         pre[i]=out
         lab[i]=label
-# ab=np.abs(pre-lab)
-# sum=0      
+# GET RMSE
+# ab=np.abs(pre-lab)  
 # for i in ab:
 #     sum=sum+i**2
-# RMSE=np.sqrt(sum/200)
+# RMSE=np.sqrt(sum/2000)
 # print(RMSE)
 A= pd.Series(pre.tolist())
 B= pd.Series(lab.tolist())
-# out_index=[i[0] for i in sorted(enumerate(pre), key=lambda x:x[1])]
-# out_index=np.array(out_index)
-# tar_index=[i[0] for i in sorted(enumerate(lab), key=lambda x:x[1])]
-# tar_index=np.array(tar_index)
-# red=np.abs(out_index-tar_index)
-# sum=0
-# leng=10
-# for i in red:
-#     sum=sum+i**2
-# srocc=1-(6*sum)/(leng*(leng**2-1))   
+
 srocc=A.corr(B,method='spearman')
 print(srocc)
