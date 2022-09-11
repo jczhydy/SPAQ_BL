@@ -8,6 +8,6 @@
 ## 训练结果
 原论文中SROCC为0.90，test.py训练得到SROCC为0.89
 ## 其他
-\cdot 训练环境：Auto-DL GPU：RTX3090
-\cdot 图片预处理中先进行CenterCrop,再进行resize操作能够较好保存图片完整信息，其训练效果比直接进行CenterCrop更优
-\cdot 对输入图片进行RandomCrop操作能显著提高模型泛化能力
+1.训练环境：Auto-DL GPU：RTX3090
+2.图片预处理中先进行CenterCrop,再进行resize操作能够较好保存图片完整信息，其训练效果比直接进行CenterCrop更优
+3.对输入图片进行RandomCrop操作能显著提高模型泛化能力
