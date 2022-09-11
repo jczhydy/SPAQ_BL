@@ -17,7 +17,8 @@ from tqdm import tqdm
 import os
 from torch.utils.data import Dataset
 
-
+#change them with your own file path
+#traindata2.xlsx  stores the MOS of image for training,so as test2.xlsx 
 file_name1 = '/root/IQA/traindata2.xlsx'
 file_name2 = '/root/IQA/testdata2.xlsx'
 data1 = pd.read_excel(file_name1,usecols=[0],header=None)
@@ -58,9 +59,6 @@ def load_sample(sample_dir):
                 t=t+1
         lfilenames.sort(key=lambda x:int(x[-9:-4]))       
     lab = list(labelnames)  
-    labdict = dict(zip(lab,list(range(len(lab)))))# 
-    labels = [labdict[i] for i in labelnames]    # #
-    image_label_dict = dict(zip(lfilenames,labels))    # 
    
     return lfilenames,lab
 
@@ -71,7 +69,7 @@ class MyDataSet(Dataset):
 
         if dataset_type=='test':          
             self.transform = test_transform
-        # self.sample_list = list()
+
         self.dataset_type = dataset_type
         self.sample_list = filenames
         self.label_list = labelnames
@@ -106,19 +104,13 @@ test_transform=transforms.Compose([transforms.ToPILImage(),
                               #transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                              ])
 loss_criterion = nn.L1Loss(reduction = 'sum') 
-#loss_criterion = nn.MSELoss(reduction = 'sum') 
-#model_path='/root/IQA/simclr_resnet50.pth'
 epochs=40
 
 net=resnet50(pretrained=True)
 channel_in = net.fc.in_features
 net.fc=nn.Linear(channel_in,1)
 net=net.cuda()
-# model_path='image_model24.pth'
-# state_dict = torch.load(model_path, map_location='cpu')
-# net.load_state_dict(state_dict, strict=True)
 
-# train or test for one epoch
 def train_val(net, data_loader, train_optimizer):
     total_loss, total_num, data_bar = 0.0, 0, tqdm(data_loader)
     for data, target in data_bar:
@@ -179,14 +171,8 @@ def test_val(net, data_loader):
     return test_loss/test_num
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='Linear Evaluation')
-    # parser.add_argument('--model_path', type=str, default='128_0.5_200_256_100_model.pth',
-    #                     help='The pretrained model path')
-    # parser.add_argument('--batch_size', type=int, default=32, help='Number of images in each mini-batch')
-    # parser.add_argument('--epochs', type=int, default=10, help='Number of sweeps over the dataset to train')
 
-    # args = parser.parse_args(args=[])
-  
+    #change them with your own file path
     train_directory_rand='/root/IQA/rand_train_4'
     test_directory_rand='/root/IQA/rand_test_4'
     
@@ -213,41 +199,29 @@ if __name__ == '__main__':
             for param in net.fc.parameters():
                 param.requires_grad = True
             optimizer = optim.Adam(net.parameters(), lr=1e-3)
-            #optimizer = optim.SGD(model.fc.parameters(),lr=1e-3)
+
           
         if epoch>=5 and epoch<20:
             for param in net.parameters():
                 param.requires_grad = True
             optimizer = optim.Adam(net.parameters(), lr=1e-4)
-            #optimizer = optim.SGD(model.fc.parameters(),lr=1e-4)
+
             
         if epoch>=20 and epoch<30:
 
             optimizer = optim.Adam(net.parameters(), lr=1e-5)
-            #optimizer = optim.SGD(model.fc.parameters(),lr=1e-5)
+ 
             
         if epoch>=30 and epoch<40:
-            optimizer = optim.Adam(net.parameters(), lr=1e-6)
-            
-        if epoch>=40 and epoch<=50:
-            optimizer = optim.Adam(net.parameters(), lr=1e-7)
-        
-        
-        
-
-            
-       
+            optimizer = optim.Adam(net.parameters(), lr=1e-6)      
 
         net.train()
         train_loss=train_val(net, train_loader, optimizer)
         net.eval()
         test_loss = test_val(net,test_loader)
         results['train_loss'].append(train_loss)
-        #results['train_srocc'].append(train_srocc)
-        #test_loss,test_srocc = train_val(model, test_loader, None)
-        results['test_loss'].append(test_loss)
-        #results['test_srocc'].append(test_srocc)
-        
+        results['test_loss'].append(test_loss)      
         data_frame = pd.DataFrame(data=results, index=range(1, epoch + 1))
-        data_frame.to_csv('result27.csv', index_label='epoch')
-    torch.save(net.state_dict(), 'image_model27.pth')
+        data_frame.to_csv('result.csv', index_label='epoch')
+        
+    torch.save(net.state_dict(), 'image_model.pth')
