@@ -10,6 +10,8 @@
 4.test.py加载预训练模型得到最终的SROCC分数
 ## 训练结果
 原论文中SROCC为0.90，test.py训练得到SROCC为0.89
+
+预训练模型可在[链接](https://pan.baidu.com/s/1A9jDY5N-qvDrrXum-UR2FQ)下载（提取码: sxjy） 
 ## 其他
 1.训练环境：Auto-DL GPU：RTX3090
 
