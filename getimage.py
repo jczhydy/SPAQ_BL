@@ -61,23 +61,23 @@ def crop_train():
     t=1
     for i in train_filenames:
         img = Image.open(i)
-        RandomCrop = transforms.CenterCrop(size=(512, 512))  #随机剪裁
+        RandomCrop = transforms.CenterCrop(size=(1800, 1800))  #随机剪裁
         random_image = RandomCrop(img)
-       # _resize = transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.BICUBIC)
-       #image=_resize(random_image)
+        _resize = transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.BICUBIC)
+        image=_resize(random_image)
         save_name = r'D:/SPAQ zip/rand_train_5/'+i[-9:-4]+'.png'
-        random_image.save(save_name)
+        image.save(save_name)
         t=t+1
 def crop_test():
     t=1
     for i in test_filenames:
         img = Image.open(i)
-        RandomCrop = transforms.CenterCrop(size=(512, 512))  
+        RandomCrop = transforms.CenterCrop(size=(1800, 1800))  
         random_image = RandomCrop(img)
-        # image_resize = transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.BICUBIC)
-        # image=image_resize(random_image)
+        image_resize = transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.BICUBIC)
+        image=image_resize(random_image)
         save_name = r'D:/SPAQ zip/rand_test_5/'+i[-9:-4]+'.png'
-        random_image.save(save_name)
+        image.save(save_name)
         t=t+1
 crop_train()
 crop_test()
